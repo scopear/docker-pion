@@ -16,10 +16,10 @@ TURN_USER_PASSWORD=${TURN_USER_PASSWORD//:/}      # : -> (nothing, character not
 [ -z "$TURN_RELAY_PORT_RANGE_MAX" ] && TURN_RELAY_PORT_RANGE_MAX=65535
 [ -z "$TURN_REALM_NAME"           ] && TURN_REALM_NAME=ScopeAR
 
-/usr/local/bin/pion \ 
+/usr/local/bin/pion \
   -public-ip "$EXTERNAL_IPV4_ADDRESS" \
-  -port "$TURN_SERVER_PORT" \ 
+  -port "$TURN_SERVER_PORT" \
   -users "$TURN_USER_NAME=$TURN_USER_PASSWORD" \
   -realm "$TURN_REALM_NAME" \
-  -port-range-min "$TURN_RELAY_PORT_RANGE_MIN" \ 
+  -port-range-min "$TURN_RELAY_PORT_RANGE_MIN" \
   -port-range-max "$TURN_RELAY_PORT_RANGE_MAX"
