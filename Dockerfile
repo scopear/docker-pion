@@ -14,6 +14,7 @@ COPY  ./ /build-temp
 # Build the custom-pion binary
 RUN cd /build-temp/custom-pion && \
     go build -o /usr/local/bin/pion && \
+    cp /build-temp/custom-pion/run_pion /usr/local/bin/run_pion && \
     chmod +x /usr/local/bin/pion && \
     rm -rf /build-temp
 
