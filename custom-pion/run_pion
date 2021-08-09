@@ -16,6 +16,14 @@ TURN_USER_PASSWORD=${TURN_USER_PASSWORD//:/}      # : -> (nothing, character not
 [ -z "$TURN_RELAY_PORT_RANGE_MAX" ] && TURN_RELAY_PORT_RANGE_MAX=65535
 [ -z "$TURN_REALM_NAME"           ] && TURN_REALM_NAME=ScopeAR
 
+echo "=== Start Config ==="
+echo "\tTURN_REALM_NAME=${TURN_REALM_NAME}"
+echo "\tEXTERNAL_IPV4_ADDRESS=${EXTERNAL_IPV4_ADDRESS}"
+echo "\tTURN_SERVER_PORT=${TURN_SERVER_PORT}"
+echo "\TURN_RELAY_PORT_RANGE_MIN=${TURN_RELAY_PORT_RANGE_MIN}"
+echo "\TURN_RELAY_PORT_RANGE_MAX=${TURN_RELAY_PORT_RANGE_MAX}"
+echo "=== End Config ==="
+
 /usr/local/bin/pion \
   -public-ip "$EXTERNAL_IPV4_ADDRESS" \
   -port "$TURN_SERVER_PORT" \
