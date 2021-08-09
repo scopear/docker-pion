@@ -1,0 +1,107 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: scopear/docker-base:ci-alpine3.12
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASS
+    steps:
+      - setup_remote_docker:   
+          version: 19.03.13
+      - checkout
+      - run:
+          name: Docker Login
+          command: docker_login
+      - run:
+          name: Build Images
+          command: docker build -t "scopear/docker-pion" .
+      - run:
+          name: Push Images
+          command: docker_push "scopear/docker-pion"
+      - run:
+          name: Create Image Artifact
+          command: docker save -o docker-pion.tar scopear/docker-pion
+      - store_artifacts:
+          path: docker-pion.tar
+          destination: docker-pion.tar
+
+  on-prem:
+    docker:
+      - image: scopear/docker-base:ci-aws-alpine3.12
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASS
+    steps:
+      - setup_remote_docker:   
+          version: 19.03.13
+      - run:
+          name: Docker Login
+          command: docker_login
+      - run:
+          name: Upload Image
+          command: docker_upload_s3 "scopear/docker-pion" "$CIRCLE_TAG"
+
+  aqua-scan:
+    docker:
+      - image: scopear/docker-base:ci-aws-alpine3.12
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASS
+    working_directory: /tmp
+    steps:
+      - setup_remote_docker:
+          version: 19.03.13
+      - run:
+          name: Docker Login
+          command: docker_login
+      - run:
+          name: Run AquaScan Image
+          command: >-
+            echo "Running Aqua Scanner Image tagged $AQUA_SCANNER_VERSION...";
+            docker run --rm -v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock 
+            $AQUA_SCANNER_REPO:$AQUA_SCANNER_VERSION 
+            scan --registry "$IMAGE_REGISTRY" "scopear/docker-pion:$CIRCLE_TAG" 
+            --host $AQUA_HOST --user $AQUA_CONSOLE_USER --password $AQUA_CONSOLE_PASS 
+            --show-negligible --register 
+            --htmlfile /tmp/out.html --jsonfile /tmp/out.json --html 
+            > /tmp/out.html;
+      - store_artifacts:
+          path: /tmp/out.html
+          destination: aquascan_turnserver_results.html
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - build:
+          context: scope-circleci
+          filters:
+            tags:
+              only:
+                - /^\d+\.\d+\.\d+.*/
+                - /^on-prem-\d+\.\d+\.\d+.*/
+      - on-prem:
+          requires:
+           - build
+          context: scope-circleci-on-prem
+          filters:
+            branches:
+              ignore:
+                - /.*/
+            tags:
+              only:
+                - /^on-prem-\d+\.\d+\.\d+.*$/
+      
+      - aqua-scan:
+          requires:
+           - build
+          context: scope-aqua-scan
+          filters:
+            branches:
+              ignore:
+                - /.*/
+            tags:
+              only:
+                - /^\d+\.\d+\.\d+.*/
+                - /^on-prem-\d+\.\d+\.\d+.*/
