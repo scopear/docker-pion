@@ -12,9 +12,9 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
 COPY  ./ /build-temp
 
 # Build the custom-pion binary
-RUN cd /build-temp/custom-pion &&
-    go build -o /usr/local/bin/pion &&
-    chown +x /usr/local/bin/pion &&
+RUN cd /build-temp/custom-pion && \
+    go build -o /usr/local/bin/pion && \
+    chown +x /usr/local/bin/pion && \
     rm -rf /build-temp
 
 USER 65534
