@@ -22,3 +22,7 @@ cover.out
 *.wasm
 examples/sfu-ws/cert.pem
 examples/sfu-ws/key.pem
+
+### Ignore local builds
+custom-pion/client/client
+custom-pion/server/server

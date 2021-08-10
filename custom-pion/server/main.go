@@ -74,6 +74,14 @@ func main() {
 		log.Panicf("Failed to create TURN server listener: %s", err)
 	}
 
+	// Create a TCP listener to pass into pion/turn
+	// pion/turn itself doesn't allocate any TCP listeners, but lets the user pass them in
+	// this allows us to add logging, storage or modify inbound/outbound traffic
+	tcpListener, err := net.Listen("tcp4", "0.0.0.0:"+strconv.Itoa(*port))
+	if err != nil {
+		log.Panicf("Failed to create TURN server listener: %s", err)
+	}
+
 	// Cache -users flag for easy lookup later
 	// If passwords are stored they should be saved to your DB hashed using turn.GenerateAuthKey
 	usersMap := map[string][]byte{}
@@ -101,6 +109,16 @@ func main() {
 					Address:      "0.0.0.0",              // But actually be listening on every interface
 					MinPort:      uint16(*minPort),
 					MaxPort:      uint16(*maxPort),
+				},
+			},
+		},
+		// ListenerConfig is a list of Listeners and the configuration around them
+		ListenerConfigs: []turn.ListenerConfig{
+			{
+				Listener: tcpListener,
+				RelayAddressGenerator: &turn.RelayAddressGeneratorStatic{
+					RelayAddress: net.ParseIP(*publicIP),
+					Address:      "0.0.0.0",
 				},
 			},
 		},
