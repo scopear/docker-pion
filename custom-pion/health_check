@@ -11,7 +11,7 @@ fi
 
 [ -z "$EXTERNAL_IPV4_ADDRESS"     ] && EXTERNAL_IPV4_ADDRESS=127.0.0.1
 [ -z "$TURN_SERVER_PORT"          ] && TURN_SERVER_PORT=3478
-[ -z "$TURN_REALM_NAME"             ] && TURN_REALM_NAME=ScopeAR
+[ -z "$TURN_REALM_NAME"           ] && TURN_REALM_NAME=ScopeAR
 
 echo -e "Checking service health at $EXTERNAL_IPV4_ADDRESS:$TURN_SERVER_PORT"
 
