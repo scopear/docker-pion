@@ -17,6 +17,6 @@ echo -e "Checking service health at $EXTERNAL_IPV4_ADDRESS:$TURN_SERVER_PORT"
 
 /usr/local/bin/pion-client \
     -host $EXTERNAL_IPV4_ADDRESS \
-    -realm=ScopeAR \
+    -realm $TURN_REALM_NAME \
     -port $TURN_SERVER_PORT \
     -user $TURN_USER_NAME=$TURN_USER_PASSWORD
