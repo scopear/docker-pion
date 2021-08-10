@@ -16,7 +16,7 @@ func main() {
 	host := flag.String("host", "", "TURN Server name.")
 	port := flag.Int("port", 3478, "Listening port.")
 	user := flag.String("user", "", "A pair of username and password (e.g. \"user=pass\")")
-	realm := flag.String("realm", "pion.ly", "Realm (defaults to \"pion.ly\")")
+	realm := flag.String("realm", "ScopeAR", "Realm (defaults to \"ScopeAR\")")
 	ping := flag.Bool("ping", false, "Run ping test")
 	flag.Parse()
 
