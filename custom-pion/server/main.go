@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/pion/logging"
 	"github.com/pion/stun"
 	"github.com/pion/turn/v2"
 )
@@ -82,6 +83,12 @@ func main() {
 		log.Panicf("Failed to create TURN server listener: %s", err)
 	}
 
+	// // LoggerFactory must be set for logging from this server.
+	// loggerFactory, err := logging.
+	// if err != nil {
+	// 	log.Panicf("Failed to create loggerFactory")
+	// }
+
 	// Cache -users flag for easy lookup later
 	// If passwords are stored they should be saved to your DB hashed using turn.GenerateAuthKey
 	usersMap := map[string][]byte{}
@@ -115,13 +122,16 @@ func main() {
 		// ListenerConfig is a list of Listeners and the configuration around them
 		ListenerConfigs: []turn.ListenerConfig{
 			{
-				Listener: &stunLogger{tcpListener}, // Enabled logging output
-				RelayAddressGenerator: &turn.RelayAddressGeneratorStatic{
+				Listener: tcpListener,
+				RelayAddressGenerator: &turn.RelayAddressGeneratorPortRange{
 					RelayAddress: net.ParseIP(*publicIP),
 					Address:      "0.0.0.0",
+					MinPort:      uint16(*minPort),
+					MaxPort:      uint16(*maxPort),
 				},
 			},
 		},
+		LoggerFactory: logging.NewDefaultLoggerFactory(),
 	})
 	if err != nil {
 		log.Panic(err)
