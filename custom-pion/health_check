@@ -9,14 +9,14 @@ if [ -z "$TURN_USER_PASSWORD" ]; then
   TURN_USER_PASSWORD=$(cat /tmp/turn-user-password)
 fi
 
-[ -z "$EXTERNAL_IPV4_ADDRESS"     ] && EXTERNAL_IPV4_ADDRESS=127.0.0.1
+[ -z "$TURN_EXTERNAL_IPV4"        ] && TURN_EXTERNAL_IPV4=127.0.0.1
 [ -z "$TURN_SERVER_PORT"          ] && TURN_SERVER_PORT=3478
 [ -z "$TURN_REALM_NAME"           ] && TURN_REALM_NAME=ScopeAR
 
-echo -e "Checking service health at $EXTERNAL_IPV4_ADDRESS:$TURN_SERVER_PORT"
+echo -e "Checking service health at $TURN_EXTERNAL_IPV4:$TURN_SERVER_PORT"
 
 /usr/local/bin/pion-client \
-    -host $EXTERNAL_IPV4_ADDRESS \
+    -host $TURN_EXTERNAL_IPV4 \
     -realm $TURN_REALM_NAME \
     -port $TURN_SERVER_PORT \
     -user $TURN_USER_NAME=$TURN_USER_PASSWORD

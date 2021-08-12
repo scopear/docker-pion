@@ -9,7 +9,7 @@ if [ -z "$TURN_USER_PASSWORD" ]; then
   TURN_USER_PASSWORD=$(cat /tmp/turn-user-password)
 fi
 
-[ -z "$EXTERNAL_IPV4_ADDRESS"     ] && EXTERNAL_IPV4_ADDRESS=127.0.0.1
+[ -z "$TURN_EXTERNAL_IPV4"     ] && TURN_EXTERNAL_IPV4=127.0.0.1
 [ -z "$TURN_SERVER_PORT"          ] && TURN_SERVER_PORT=3478
 [ -z "$TURN_REALM_NAME"           ] && TURN_REALM_NAME=ScopeAR
 [ -z "$TURN_RELAY_PORT_RANGE_MIN" ] && TURN_RELAY_PORT_RANGE_MIN=49152
@@ -17,14 +17,14 @@ fi
 
 echo -e "=== Start Config ==="
 echo -e "TURN_REALM_NAME=${TURN_REALM_NAME}"
-echo -e "EXTERNAL_IPV4_ADDRESS=${EXTERNAL_IPV4_ADDRESS}"
+echo -e "TURN_EXTERNAL_IPV4=${TURN_EXTERNAL_IPV4}"
 echo -e "TURN_SERVER_PORT=${TURN_SERVER_PORT}"
 echo -e "TURN_RELAY_PORT_RANGE_MIN=${TURN_RELAY_PORT_RANGE_MIN}"
 echo -e "TURN_RELAY_PORT_RANGE_MAX=${TURN_RELAY_PORT_RANGE_MAX}"
 echo -e "=== End Config ==="
 
 /usr/local/bin/pion-server \
-  -public-ip "$EXTERNAL_IPV4_ADDRESS" \
+  -public-ip "$TURN_EXTERNAL_IPV4" \
   -port "$TURN_SERVER_PORT" \
   -users "$TURN_USER_NAME=$TURN_USER_PASSWORD" \
   -realm "$TURN_REALM_NAME" \
