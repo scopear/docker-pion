@@ -2,7 +2,7 @@ ARG DEBIAN_VERSION=latest
 
 # ===
 # Install golang and build the binaries 
-FROM debian:${DEBIAN_VERSION} as base
+FROM ubuntu:${DEBIAN_VERSION} as base
 ARG GO_VERSION=go1.17.1 
 
 # Install golang
@@ -35,7 +35,7 @@ RUN chmod +x /build-temp/custom-pion/run_pion && \
 
 # ---
 # Final Image with essentials only
-FROM debian:${DEBIAN_VERSION}
+FROM ubuntu:${DEBIAN_VERSION}
 
 # Copy golang
 COPY --from=base /usr/local/go /usr/local/
