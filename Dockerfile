@@ -19,7 +19,7 @@ RUN set -eux \
       x86) export GO386='387' ;; \
     esac \
 	&& echo "Downloading golang version=${GOLANG_VERSION}" \
-  && wget "https://dl.google.com/go/${GOLANG_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
+  && wget -qO- "https://dl.google.com/go/${GOLANG_VERSION}.linux-amd64.tar.gz" | tar -xz - -C /usr/local \
 	&& cd /usr/local/go/src \
 	&& ./make.bash \
 	&& rm -rf \
