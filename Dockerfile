@@ -7,6 +7,7 @@ RUN apk update && apk add --no-cache git make musl-dev bash curl tar go gcc musl
 ARG GO_VERSION=go1.17.1 
 RUN echo "Downloading golang version=${GO_VERSION}" \
   && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
+  && export GOROOT_BOOTSTRAP=/usr/bin/go \
   && cd /usr/local/go/src && ./make.bash \
   && go version \
   && apk del go
