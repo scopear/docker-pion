@@ -3,7 +3,7 @@ FROM alpine:latest
 RUN apk add --no-cache git make musl-dev bash curl tar
 
 # Configure Go
-ARG GO_VERSION $(curl https://golang.org/VERSION?m=text)
+ARG GO_VERSION=$(curl https://golang.org/VERSION?m=text)
 ENV GOROOT /usr/lib/go
 ENV GOPATH /go
 ENV PATH /go/bin:$PATH
