@@ -3,7 +3,7 @@ FROM alpine:latest
 RUN apk add --no-cache git make musl-dev bash curl tar
 
 # Configure Go
-# You can find the latest version with `curl https://golang.org/VERSION?m=text`
+# You can find the latest golang version with `curl https://golang.org/VERSION?m=text`
 ARG GO_VERSION=go1.17.1 
 ENV GOROOT /usr/lib/go
 ENV GOPATH /go
@@ -13,7 +13,7 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
 
 # Install golang
 RUN echo "Downloading golang version=${GO_VERSION}" \
-  && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xzv -C /usr/lib/ \
+  && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/lib/ \
   && chmod +x -R /usr/lib/go
 
 COPY  ./ /build-temp
