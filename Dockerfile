@@ -1,13 +1,13 @@
-FROM debian:latest
+FROM golang:latest
 
-RUN apt-get update && apt-get -y install git make go musl-dev bash
+RUN apt-get update && apt-get -y install git make musl-dev bash
 
 # Configure Go
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
+# ENV GOROOT /usr/lib/go
+# ENV GOPATH /go
+# ENV PATH /go/bin:$PATH
 
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
+RUN mkdir -p /build-temp
 
 COPY  ./ /build-temp
 
