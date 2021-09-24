@@ -14,7 +14,6 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
 
 RUN echo "Downloading golang version=${GO_VERSION}" \
   && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
-  && export GOROOT_BOOTSTRAP=/usr/bin/go \
   && cd /usr/local/go/src && ./make.bash \
   && go version \
   && apk del go
