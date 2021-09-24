@@ -21,9 +21,9 @@ COPY  ./ /build-temp
 
 # Build the custom-pion binaries
 RUN cd /build-temp/custom-pion/server && \
-    go build -o /usr/local/bin/pion-server && \
+    /usr/lib/go/bin/go build -o /usr/local/bin/pion-server && \
     cd /build-temp/custom-pion/client && \
-    go build -o /usr/local/bin/pion-client && \
+    /usr/lib/go/bin/go build -o /usr/local/bin/pion-client && \
     chmod +x /usr/local/bin/pion-server && \
     chmod +x /usr/local/bin/pion-client
 
