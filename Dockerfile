@@ -14,8 +14,8 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
 # Install golang
 RUN echo "Downloading golang version=${GO_VERSION}" \
   && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/lib/ \
-  && chmod +x -R /usr/lib/go \
-  && export PATH=$PATH:/usr/lib/go/bin
+  && chmod +x -R /usr/lib/go 
+ENV PATH="/usr/lib/go/bin:${PATH}"
 
 COPY  ./ /build-temp
 
