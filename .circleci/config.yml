@@ -18,15 +18,31 @@ jobs:
           command: docker build -t "scopear/docker-pion" .
       - run:
           name: Push Images
-          command: docker_push "scopear/docker-pion"
+          command: |
+            DOCKER_IMAGE="scopear/docker-pion"
+            [[ -z "${CIRCLE_TAG}" ]] && IMAGE_NAME="git-$CIRCLE_SHA1" || IMAGE_NAME="${CIRCLE_TAG}"
+            echo "Pushing $DOCKER_IMAGE:$IMAGE_NAME ..."
+            docker tag "$DOCKER_IMAGE" "$DOCKER_IMAGE:$IMAGE_NAME"
+            docker push "$DOCKER_IMAGE:$IMAGE_NAME"
       - run:
           name: Create Image Artifact
           command: docker save -o docker-pion.tar scopear/docker-pion
       - store_artifacts:
           path: docker-pion.tar
           destination: docker-pion.tar
+      - run:
+          name: Save Image Digest env variable
+          command: |
+            IMAGE="scopear/docker-pion"
+            mkdir -p /tmp/workspace/shared-envs
+            IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMAGE}" | sed 's/\(.*\)@\(.*\)/\2/g')
+            echo "export IMAGE_DIGEST=${IMAGE_DIGEST}" >> /tmp/workspace/shared-envs/build-envs
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths: 
+          - shared-envs/*
 
-  on-prem:
+  on-prem-upload-image-to-s3:
     docker:
       - image: scopear/docker-base:ci-aws-alpine3.12
         auth:
@@ -58,17 +74,20 @@ jobs:
       - run:
           name: Run AquaScan Image
           command: >-
+            DOCKER_IMAGE="scopear/docker-pion";
+            [[ -z "${CIRCLE_TAG}" ]] && IMAGE_NAME="git-$CIRCLE_SHA1" || IMAGE_NAME="${CIRCLE_TAG}";
             echo "Running Aqua Scanner Image tagged $AQUA_SCANNER_VERSION...";
-            docker run --rm -v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock 
-            $AQUA_SCANNER_REPO:$AQUA_SCANNER_VERSION 
-            scan --registry "$IMAGE_REGISTRY" "scopear/docker-pion:$CIRCLE_TAG" 
-            --host $AQUA_HOST --user $AQUA_CONSOLE_USER --password $AQUA_CONSOLE_PASS 
-            --show-negligible --register 
-            --htmlfile /tmp/out.html --jsonfile /tmp/out.json --html 
+            echo "Scanning $DOCKER_IMAGE:$IMAGE_NAME ...";
+            docker run --rm -v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock
+            $AQUA_SCANNER_REPO:$AQUA_SCANNER_VERSION
+            scan --registry "$IMAGE_REGISTRY" "$DOCKER_IMAGE:$IMAGE_NAME"
+            --host $AQUA_HOST --user $AQUA_CONSOLE_USER --password $AQUA_CONSOLE_PASS
+            --show-negligible --register
+            --htmlfile /tmp/out.html --jsonfile /tmp/out.json --html
             > /tmp/out.html;
       - store_artifacts:
           path: /tmp/out.html
-          destination: aquascan_turnserver_results.html
+          destination: aquascan_pion_results.html
 
 workflows:
   version: 2
@@ -77,11 +96,15 @@ workflows:
       - build:
           context: scope-circleci
           filters:
+            branches:
+              only:
+                - /develop/
             tags:
               only:
                 - /^\d+\.\d+\.\d+.*/
                 - /^on-prem-\d+\.\d+\.\d+.*/
-      - on-prem:
+                
+      - on-prem-upload-image-to-s3:
           requires:
            - build
           context: scope-circleci-on-prem
@@ -99,9 +122,8 @@ workflows:
           context: scope-aqua-scan
           filters:
             branches:
-              ignore:
+              only:
                 - /.*/
             tags:
               only:
-                - /^\d+\.\d+\.\d+.*/
-                - /^on-prem-\d+\.\d+\.\d+.*/
+                - /.*/
