@@ -1,31 +1,19 @@
-FROM alpine:latest as base
+FROM debian:latest as base
+
 # Install golang
 # You can find the latest golang version with `curl https://golang.org/VERSION?m=text`
 ARG GO_VERSION=go1.17.1 
-
-RUN apk add --no-cache --virtual .build-deps bash gcc musl-dev openssl go 
+RUN apt-get update && apt-get install -y wget tar git make musl-dev bash
 RUN echo "Downloading golang version=${GO_VERSION}" \
   && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
   && cd /usr/local/go/src/ \
-  && export PATH="/usr/local/go/bin:$PATH" \
-  && export GOPATH=/opt/go/ \
-  && export PATH=$PATH:$GOPATH/bin \
-  && apk del .build-deps \
+  && export PATH=$PATH:/usr/local/go/bin \
   && go version
+ARG PATH=$PATH:/usr/local/go/bin 
+ENV PATH=$PATH:/usr/local/go/bin 
 
-
-FROM alpine:latest
-COPY --from=base /usr/local/go
-
-RUN apk add --no-cache git make musl-dev bash
-
-# Configure Go
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
-
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
-
+# Create a working directory
+RUN mkdir -p /build-temp
 COPY  ./ /build-temp
 
 # Build the custom-pion binaries
@@ -36,14 +24,22 @@ RUN cd /build-temp/custom-pion/server && \
     chmod +x /usr/local/bin/pion-server && \
     chmod +x /usr/local/bin/pion-client
 
-# Copy over scripts
-RUN cp /build-temp/custom-pion/run_pion /usr/local/bin/run_pion && \
-    cp /build-temp/custom-pion/health_check /usr/local/bin/health_check && \
-    chmod +x /usr/local/bin/run_pion && \
-    chmod +x /usr/local/bin/health_check
-    
-# Clean up 
-RUN rm -rf /build-temp
+# Make binaries executable
+RUN chmod +x /build-temp/custom-pion/run_pion && \
+    chmod +x /build-temp/custom-pion/health_check
+
+
+# ---
+# Final Image with less fluff
+FROM debian:latest
+COPY --from=base /usr/local/go /usr/local/
+COPY --from=base /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
+COPY --from=base /build-temp/custom-pion/health_check /usr/local/bin/health_check
+
+# Set the go path
+ENV PATH=$PATH:/usr/local/go/bin
+
+RUN apt-get update && apt-get install -y bash
 
 USER 65534
 
