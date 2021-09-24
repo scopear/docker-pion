@@ -1,9 +1,13 @@
-FROM debian:latest as base
+ARG DEBIAN_VERSION=latest
+
+# ===
+# Install golang and build the binaries 
+FROM debian:${DEBIAN_VERSION} as base
 
 # Install golang
 # You can find the latest golang version with `curl https://golang.org/VERSION?m=text`
 ARG GO_VERSION=go1.17.1 
-RUN apt-get update && apt-get install -y wget tar git make musl-dev bash
+RUN apt-get update && apt-get install -y wget tar git make musl-dev bash coreutils
 RUN echo "Downloading golang version=${GO_VERSION}" \
   && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
   && cd /usr/local/go/src/ \
@@ -30,8 +34,8 @@ RUN chmod +x /build-temp/custom-pion/run_pion && \
 
 
 # ---
-# Final Image with less fluff
-FROM debian:latest
+# Final Image with essentials only
+FROM debian:${DEBIAN_VERSION}
 COPY --from=base /usr/local/go /usr/local/
 COPY --from=base /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
 COPY --from=base /build-temp/custom-pion/health_check /usr/local/bin/health_check
