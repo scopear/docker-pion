@@ -1,13 +1,18 @@
-FROM golang:latest
+FROM alpine:latest
 
-RUN apt-get update && apt-get -y install git make musl-dev bash linux-libc-dev coreutils
+RUN apk add --no-cache git make musl-dev bash curl tar
 
 # Configure Go
-# ENV GOROOT /usr/lib/go
-# ENV GOPATH /go
-# ENV PATH /go/bin:$PATH
+ENV GO_VERSION $(curl https://golang.org/VERSION?m=text)
+ENV GOROOT /usr/lib/go
+ENV GOPATH /go
+ENV PATH /go/bin:$PATH
 
-RUN mkdir -p /build-temp
+RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
+
+# Install golang
+RUN wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xzv -C /usr/lib/
+  && chmod +x -R /usr/lib/go
 
 COPY  ./ /build-temp
 
