@@ -6,7 +6,7 @@ FROM alpine:${DEBIAN_VERSION} as golang-base
 ARG GOLANG_VERSION=go1.17.1 
 
 RUN set -eux \
-  && apk add --no-cache --virtual .build-deps bash gcc musl-dev openssl go \
+  && apk add --no-cache --virtual .build-deps bash gcc musl-dev openssl go tar gzip\
 	&& export \
 		GOROOT_BOOTSTRAP="$(go env GOROOT)" \
 		GOOS="$(go env GOOS)" \
@@ -19,7 +19,9 @@ RUN set -eux \
       x86) export GO386='387' ;; \
     esac \
 	&& echo "Downloading golang version=${GOLANG_VERSION}" \
-  && wget -qO- "https://dl.google.com/go/${GOLANG_VERSION}.linux-amd64.tar.gz" | tar -xz -C /usr/local \
+  && mkdir -p /build-temp \
+  && wget -O /build-temp/golang.tar.gz "https://dl.google.com/go/${GOLANG_VERSION}.linux-amd64.tar.gz" \
+  && tar -xf /build-temp/golang.tar.gz -C /usr/local \
 	&& cd /usr/local/go/src \
 	&& ./make.bash \
 	&& rm -rf \
