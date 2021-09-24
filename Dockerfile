@@ -1,6 +1,6 @@
 FROM golang:latest
 
-RUN apt-get update && apt-get -y install git make musl-dev bash
+RUN apt-get update && apt-get -y install git make musl-dev bash linux-libc-dev coreutils
 
 # Configure Go
 # ENV GOROOT /usr/lib/go
