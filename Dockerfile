@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add --no-cache git make musl-dev go bash
+RUN apk --update add --no-cache git make musl-dev go bash
 
 # Configure Go
 ENV GOROOT /usr/lib/go
