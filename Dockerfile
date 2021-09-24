@@ -8,7 +8,7 @@ RUN echo "Downloading golang version=${GO_VERSION}" \
   && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
   && cd /usr/local/go/src/ \
   && export PATH="/usr/local/go/bin:$PATH" \
-  && export GOPATH=/opt/go/ 
+  && export GOPATH=/opt/go/ \
   && export PATH=$PATH:$GOPATH/bin \
   && apk del .build-deps \
   && go version
