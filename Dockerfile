@@ -9,9 +9,9 @@ ENV GOROOT /usr/local/go
 ENV GOPATH /opt/go/
 ENV PATH $PATH:$GOPATH/bin:/usr/local/go/bin
 
-ARG GOROOT /usr/local/go
-ARG GOPATH /opt/go/
-ARG PATH $PATH:$GOPATH/bin:/usr/local/go/bin
+ARG GOROOT=/usr/local/go
+ARG GOPATH=/opt/go/
+ARG PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
 
 RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
 
