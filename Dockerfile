@@ -1,6 +1,6 @@
-FROM alpine:latest
+FROM golang:latest
 
-RUN apk --update add --no-cache git make musl-dev go bash
+RUN apt-get update && apt-get install git make musl-dev go bash
 
 # Configure Go
 ENV GOROOT /usr/lib/go
