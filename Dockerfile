@@ -38,7 +38,6 @@ RUN set -eux \
 	&& export PATH="/usr/local/go/bin:$PATH" \
 	&& go version && which go
   
-
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
