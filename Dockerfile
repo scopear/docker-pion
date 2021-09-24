@@ -1,27 +1,34 @@
-FROM alpine:latest
-
-RUN apk update && apk add --no-cache git make musl-dev bash curl tar go gcc musl-dev openssl-dev ca-certificates && update-ca-certificates
-
+FROM alpine:latest as base
 # Install golang
 # You can find the latest golang version with `curl https://golang.org/VERSION?m=text`
 ARG GO_VERSION=go1.17.1 
+
+RUN apk add --no-cache --virtual .build-deps bash gcc musl-dev openssl go 
+RUN echo "Downloading golang version=${GO_VERSION}" \
+  && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
+  && cd /usr/local/go/src/ \
+  && export PATH="/usr/local/go/bin:$PATH"
+  && export GOPATH=/opt/go/ 
+  && export PATH=$PATH:$GOPATH/bin 
+  && apk del .build-deps 
+  && go version
+
+
+FROM alpine:latest
+COPY --from=base /usr/local/go
+
+RUN apk add --no-cache git make musl-dev bash
 
 # Configure Go
 ENV GOROOT /usr/lib/go
 ENV GOPATH /go
 ENV PATH /go/bin:$PATH
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
 
-RUN echo "Downloading golang version=${GO_VERSION}" \
-  && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
-  && cd /usr/local/go/src && ./make.bash \
-  && go version \
-  && apk del go
-ENV PATH=$PATH:/usr/local/go/bin
+RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin  /build-temp
+
+COPY  ./ /build-temp
 
 # Build the custom-pion binaries
-RUN /build-temp
-COPY  ./ /build-temp
 RUN cd /build-temp/custom-pion/server && \
     go build -o /usr/local/bin/pion-server && \
     cd /build-temp/custom-pion/client && \
