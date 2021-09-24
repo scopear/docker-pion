@@ -5,6 +5,13 @@ RUN apk update && apk add --no-cache git make musl-dev bash curl tar go gcc musl
 # Install golang
 # You can find the latest golang version with `curl https://golang.org/VERSION?m=text`
 ARG GO_VERSION=go1.17.1 
+
+# Configure Go
+ENV GOROOT /usr/lib/go
+ENV GOPATH /go
+ENV PATH /go/bin:$PATH
+RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
+
 RUN echo "Downloading golang version=${GO_VERSION}" \
   && wget "https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz" -O - | tar -xz -C /usr/local \
   && export GOROOT_BOOTSTRAP=/usr/bin/go \
