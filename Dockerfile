@@ -5,12 +5,10 @@ ARG DEBIAN_VERSION=latest
 FROM alpine:${DEBIAN_VERSION} as golang-base
 ARG GOLANG_VERSION=go1.17.1 
 
-ARG GOROOT_BOOTSTRAP=/usr/bin/go
-
 RUN set -eux \
   && apk add --no-cache --virtual .build-deps bash gcc musl-dev openssl go tar gzip\
 	&& export \
-		GOROOT_BOOTSTRAP="$(go env GOROOT)" \
+		GOROOT_BOOTSTRAP="/usr/bin/go" \
 		GOOS="$(go env GOOS)" \
 		GOARCH="$(go env GOARCH)" \
 		GOHOSTOS="$(go env GOHOSTOS)" \
