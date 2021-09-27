@@ -52,20 +52,16 @@ func (s *stunLogger) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 	return
 }
 
-func main() {
-	publicIP := flag.String("public-ip", "", "IP Address that TURN can be contacted by.")
-	port := flag.Int("port", 3478, "Listening port.")
-	users := flag.String("users", "", "List of username and password (e.g. \"user=pass,user=pass\")")
-	realm := flag.String("realm", "ScopeAR", "Realm (defaults to \"ScopeAR\")")
-	minPort := flag.Int("port-range-min", 49152, "lower bounds of the UDP relay endpoints (default is 49152).")
-	maxPort := flag.Int("port-range-max", 65535, "upper bounds of the UDP relay endpoints (default is 65535).")
-	flag.Parse()
+func turnServer(publicIP *string, port *int, realm *string, users *string, minPort *int, maxPort *int) {
 
-	if len(*publicIP) == 0 {
-		log.Fatalf("'public-ip' is required")
-	} else if len(*users) == 0 {
-		log.Fatalf("'users' is required")
-	}
+	// Print configuration info
+	fmt.Printf("=== Start TURN Config ===\n")
+	fmt.Printf("TURN_EXTERNAL_IPV4=" + *publicIP + "\n")
+	fmt.Printf("TURN_SERVER_PORT=%v\n", *port)
+	fmt.Printf("TURN_REALM_NAME=" + *realm + "\n")
+	fmt.Printf("TURN_RELAY_PORT_RANGE_MIN=%v\n", *minPort)
+	fmt.Printf("TURN_RELAY_PORT_RANGE_MAX=%v\n", *maxPort)
+	fmt.Printf("=== End TURN Config ===" + "\n")
 
 	// Create a UDP listener to pass into pion/turn
 	// pion/turn itself doesn't allocate any UDP sockets, but lets the user pass them in
@@ -145,4 +141,24 @@ func main() {
 	if err = s.Close(); err != nil {
 		log.Panic(err)
 	}
+}
+
+func main() {
+	publicIP := flag.String("public-ip", "127.0.0.1", "IP Address that TURN can be contacted by.")
+	port := flag.Int("port", 3478, "Listening port.")
+	// TODO: we don't deal with multiple users in our ENV or client healthcheck
+	users := flag.String("users", "scopear=changeme", "List of username and password (e.g. \"user=pass,user=pass\")")
+	realm := flag.String("realm", "ScopeAR", "Realm (defaults to \"ScopeAR\")")
+	minPort := flag.Int("port-range-min", 49152, "lower bounds of the UDP relay endpoints (default is 49152).")
+	maxPort := flag.Int("port-range-max", 65535, "upper bounds of the UDP relay endpoints (default is 65535).")
+	flag.Parse()
+
+	if *publicIP == "127.0.0.1" {
+		fmt.Printf("[WARNING] publicIP is set to the default of `127.0.0.1` !!!")
+	} else if *users == "scopear=changeme" {
+		fmt.Printf("[WARNING] Default user and password are in use !!!")
+	}
+
+	// Start turn server service
+	turnServer(publicIP, port, realm, users, minPort, maxPort)
 }
