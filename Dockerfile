@@ -36,10 +36,6 @@ COPY --from=builder /usr/local/bin/pion-client /usr/local/bin/pion-client
 COPY --from=builder /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
 COPY --from=builder /build-temp/custom-pion/health_check /usr/local/bin/health_check
 
-# Set the go path
-ARG PATH="/usr/local/go/bin:$PATH"
-ENV PATH="/usr/local/go/bin:$PATH"
-
 USER 65534
 
 HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
