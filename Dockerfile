@@ -43,5 +43,5 @@ ENTRYPOINT ["/go/bin/pion-server", \
 	"-port", "$TURN_SERVER_PORT", \
 	"-users", "${TURN_USER_NAME}=${TURN_USER_PASSWORD}", \
 	"-realm", "${TURN_REALM_NAME}", \
-	"-port-range-min", "${TURN_RELAY_PORT_RANGE_MIN}", 
+	"-port-range-min", "${TURN_RELAY_PORT_RANGE_MIN}", \
 	"-port-range-max", "${TURN_RELAY_PORT_RANGE_MAX}"]
