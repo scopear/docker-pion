@@ -5,7 +5,7 @@ ARG OS_VERSION=latest
 # Install golang and build the binaries 
 FROM golang:alpine as builder
 
-RUN apk update && apk add --no-cache git bash
+RUN apk update && apk upgrade && apk add --no-cache git bash
 
 WORKDIR $GOPATH/src/mypackage/myapp/
 
@@ -26,6 +26,7 @@ RUN cd /build-temp/custom-pion/server \
 FROM scratch
 
 # Copy Bash
+COPY --from=builder /bin/sh /bin/sh
 COPY --from=builder /bin/bash /bin/bash
 
 # Copy binaries
