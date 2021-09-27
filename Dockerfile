@@ -36,7 +36,7 @@ COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 # COPY --from=builder /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
 # COPY --from=builder /build-temp/custom-pion/health_check /usr/local/bin/health_check
 
-USER 65534
+#USER 65534
 
 # HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
 #   CMD /usr/local/bin/health_check
