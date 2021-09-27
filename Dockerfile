@@ -1,4 +1,4 @@
-ARG DEBIAN_VERSION=latest
+ARG DEBIAN_VERSION=bookworm
 
 # ===
 # Install golang (not new enough from offical build) and build the binaries 
