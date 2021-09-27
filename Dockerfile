@@ -16,8 +16,8 @@ RUN cd /build-temp/custom-pion/server \
     && go build -o /go/bin/pion-server \
     && cd /build-temp/custom-pion/client \
     && go build -o /go/bin/pion-client \
-    && chmod +x /usr/local/bin/pion-server \
-    && chmod +x /usr/local/bin/pion-client
+    && chmod +x /go/bin/pion-server \
+    && chmod +x /go/bin/pion-client
 
 # Make binaries executable
 RUN chmod +x /build-temp/custom-pion/run_pion \
@@ -33,8 +33,8 @@ COPY --from=builder /go/bin/pion-server /go/bin/pion-server
 COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 
 # Copy custom scripts
-COPY --from=builder /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
-COPY --from=builder /build-temp/custom-pion/health_check /usr/local/bin/health_check
+# COPY --from=builder /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
+# COPY --from=builder /build-temp/custom-pion/health_check /usr/local/bin/health_check
 
 USER 65534
 
