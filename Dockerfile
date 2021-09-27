@@ -15,9 +15,9 @@ COPY  ./ /build-temp
 
 # Build the custom-pion binaries
 RUN cd /build-temp/custom-pion/server \
-    && go build -o /go/bin/pion-server \
+    && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/pion-server \
     && cd /build-temp/custom-pion/client \
-    && go build -o /go/bin/pion-client \
+    && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/pion-client \
     && chmod +x /go/bin/pion-server \
     && chmod +x /go/bin/pion-client
 
