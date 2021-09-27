@@ -7,6 +7,8 @@ FROM golang:alpine as builder
 
 RUN apk update && apk add --no-cache git
 
+WORKDIR $GOPATH/src/mypackage/myapp/
+
 # Create a working directory
 RUN mkdir -p /build-temp
 COPY  ./ /build-temp
@@ -18,11 +20,6 @@ RUN cd /build-temp/custom-pion/server \
     && go build -o /go/bin/pion-client \
     && chmod +x /go/bin/pion-server \
     && chmod +x /go/bin/pion-client
-
-# Make binaries executable
-RUN chmod +x /build-temp/custom-pion/run_pion \
-    && chmod +x /build-temp/custom-pion/health_check
-
 
 # ---
 # Final Image with essentials only
@@ -41,4 +38,4 @@ COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 # HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
 #   CMD /usr/local/bin/health_check
 
-ENTRYPOINT ["/usr/local/bin/run_pion"]
+ENTRYPOINT ["/go/bin/pion-server"]
