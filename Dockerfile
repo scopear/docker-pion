@@ -29,13 +29,19 @@ FROM scratch
 COPY --from=builder /go/bin/pion-server /go/bin/pion-server
 COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 
-# Copy custom scripts
-# COPY --from=builder /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
-# COPY --from=builder /build-temp/custom-pion/health_check /usr/local/bin/health_check
+USER 65534
 
-#USER 65534
+HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
+  CMD /go/bin/pion-client \
+  	-host $TURN_EXTERNAL_IPV4 \
+    -realm $TURN_REALM_NAME \
+    -port $TURN_SERVER_PORT \
+    -user $TURN_USER_NAME=$TURN_USER_PASSWORD
 
-# HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
-#   CMD /usr/local/bin/health_check
-
-ENTRYPOINT ["/go/bin/pion-server"]
+ENTRYPOINT ["/go/bin/pion-server", \
+	"-public-ip", "${TURN_EXTERNAL_IPV4}", \
+	"-port", "$TURN_SERVER_PORT", \
+	"-users", "${TURN_USER_NAME}=${TURN_USER_PASSWORD}", \
+	"-realm", "${TURN_REALM_NAME}", \
+	"-port-range-min", "${TURN_RELAY_PORT_RANGE_MIN}", 
+	"-port-range-max", "${TURN_RELAY_PORT_RANGE_MAX}"]

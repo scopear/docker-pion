@@ -13,19 +13,18 @@ import (
 )
 
 func main() {
-	host := flag.String("host", "", "TURN Server name.")
+	host := flag.String("host", "127.0.0.1", "TURN Server name.")
 	port := flag.Int("port", 3478, "Listening port.")
-	user := flag.String("user", "", "A pair of username and password (e.g. \"user=pass\")")
+	user := flag.String("user", "scopear=changeme", "A pair of username and password (e.g. \"user=pass\")")
 	realm := flag.String("realm", "ScopeAR", "Realm (defaults to \"ScopeAR\")")
 	ping := flag.Bool("ping", false, "Run ping test")
 	flag.Parse()
 
-	if len(*host) == 0 {
-		log.Fatalf("'host' is required")
+	if *host == "127.0.0.1" {
+		fmt.Printf("[WARNING] host is set to the default of `127.0.0.1`!!!\n")
 	}
-
-	if len(*user) == 0 {
-		log.Fatalf("'user' is required")
+	if *user == "scopear=changeme" {
+		fmt.Printf("[WARNING] Default user and password are in use!!!\n")
 	}
 
 	cred := strings.SplitN(*user, "=", 2)
