@@ -39,9 +39,9 @@ HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
     -user $TURN_USER_NAME=$TURN_USER_PASSWORD
 
 ENTRYPOINT /go/bin/pion-server \
-	-public-ip "${TURN_EXTERNAL_IPV4}" \
-	-port "${TURN_SERVER_PORT}" \
-	-users "${TURN_USER_NAME}=${TURN_USER_PASSWORD}" \
-	-realm "${TURN_REALM_NAME}" \
-	-port-range-min "${TURN_RELAY_PORT_RANGE_MIN}" \
-	-port-range-max "${TURN_RELAY_PORT_RANGE_MAX}"
+	-public-ip $TURN_EXTERNAL_IPV4 \
+	-port $TURN_SERVER_PORT \
+	-users $TURN_USER_NAME=$TURN_USER_PASSWORD \
+	-realm $TURN_REALM_NAME \
+	-port-range-min $TURN_RELAY_PORT_RANGE_MIN \
+	-port-range-max $TURN_RELAY_PORT_RANGE_MAX
