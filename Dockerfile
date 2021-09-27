@@ -13,9 +13,9 @@ COPY  ./ /build-temp
 
 # Build the custom-pion binaries
 RUN cd /build-temp/custom-pion/server \
-    && go build -o /usr/local/bin/pion-server \
+    && go build -o /go/bin/pion-server \
     && cd /build-temp/custom-pion/client \
-    && go build -o /usr/local/bin/pion-client \
+    && go build -o /go/bin/pion-client \
     && chmod +x /usr/local/bin/pion-server \
     && chmod +x /usr/local/bin/pion-client
 
@@ -29,8 +29,8 @@ RUN chmod +x /build-temp/custom-pion/run_pion \
 FROM scratch
 
 # Copy binaries
-COPY --from=builder /usr/local/bin/pion-server /usr/local/bin/pion-server
-COPY --from=builder /usr/local/bin/pion-client /usr/local/bin/pion-client
+COPY --from=builder /go/bin/pion-server /go/bin/pion-server
+COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 
 # Copy custom scripts
 COPY --from=builder /build-temp/custom-pion/run_pion /usr/local/bin/run_pion
