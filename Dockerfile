@@ -25,6 +25,8 @@ RUN cd /build-temp/custom-pion/server \
 # Final Image with essentials only
 FROM scratch
 
+RUN apk update && apk add --no-cache bash
+
 # Copy binaries
 COPY --from=builder /go/bin/pion-server /go/bin/pion-server
 COPY --from=builder /go/bin/pion-client /go/bin/pion-client
