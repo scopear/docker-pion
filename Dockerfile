@@ -26,8 +26,7 @@ RUN cd /build-temp/custom-pion/server \
 FROM scratch
 
 # Copy Bash
-COPY --from=builder /usr/bin/sh /usr/bin/sh
-COPY --from=builder /usr/bin/bash /usr/bin/bash
+COPY --from=builder /bin/bash /bin/bash
 
 # Copy binaries
 COPY --from=builder /go/bin/pion-server /go/bin/pion-server
@@ -36,13 +35,13 @@ COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 USER 65534
 
 HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
-  CMD /go/bin/pion-client \
+  CMD bash -c /go/bin/pion-client \
   	-host $TURN_EXTERNAL_IPV4 \
     -realm $TURN_REALM_NAME \
     -port $TURN_SERVER_PORT \
     -user $TURN_USER_NAME=$TURN_USER_PASSWORD
 
-ENTRYPOINT /go/bin/pion-server \
+ENTRYPOINT bash -c /go/bin/pion-server \
 	-public-ip $TURN_EXTERNAL_IPV4 \
 	-port $TURN_SERVER_PORT \
 	-users $TURN_USER_NAME=$TURN_USER_PASSWORD \
