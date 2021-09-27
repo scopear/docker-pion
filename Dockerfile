@@ -2,11 +2,11 @@ ARG DEBIAN_VERSION=bookworm
 
 # ===
 # Install golang (not new enough from offical build) and build the binaries 
-FROM alpine:${DEBIAN_VERSION} as golang-base
+FROM debian:${DEBIAN_VERSION} as golang-base
 ARG GOLANG_VERSION=go1.17.1 
 
 RUN set -eux \
-  && apk add --no-cache --virtual .build-deps bash gcc musl-dev openssl go tar gzip\
+  && apt-get update && apt-get install -y .build-deps bash gcc musl-dev openssl go tar gzip\
 	&& export \
 		GOROOT_BOOTSTRAP="/usr/bin/go" \
 		GOOS="$(go env GOOS)" \
@@ -40,7 +40,7 @@ WORKDIR $GOPATH
 
 # ===
 # Install golang and build the binaries 
-FROM alpine:${DEBIAN_VERSION} as custom-binaries
+FROM debian:${DEBIAN_VERSION} as custom-binaries
 
 COPY --from=golang-base /usr/local/go /usr/local/
 ARG PATH="/usr/local/go/bin:$PATH"
@@ -67,7 +67,7 @@ RUN chmod +x /build-temp/custom-pion/run_pion && \
 # Final Image with essentials only
 FROM alpine:${DEBIAN_VERSION}
 
-RUN apk add --no-cache bash
+RUN apt-get update && apt-get install -y bash
 
 # Copy golang
 COPY --from=golang-base /usr/local/go /usr/local/
