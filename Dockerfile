@@ -33,8 +33,6 @@ COPY --from=builder /bin/bash /bin/bash
 COPY --from=builder /go/bin/pion-server /go/bin/pion-server
 COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 
-USER 65534
-
 HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
   CMD bash -c /go/bin/pion-client \
   	-host $TURN_EXTERNAL_IPV4 \
