@@ -1,73 +1,57 @@
-ARG DEBIAN_VERSION=bookworm
+ARG OS_NAME=debian
+ARG OS_VERSION=latest
 
 # ===
 # Install golang (not new enough from offical build) and build the binaries 
-FROM debian:${DEBIAN_VERSION} as golang-base
+FROM ${OS_NAME}:${OS_VERSION} as golang-base
 ARG GOLANG_VERSION=go1.17.1 
 
 RUN set -eux \
-  && apt-get update && apt-get install -y .build-deps bash gcc musl-dev openssl go tar gzip\
-	&& export \
-		GOROOT_BOOTSTRAP="/usr/bin/go" \
-		GOOS="$(go env GOOS)" \
-		GOARCH="$(go env GOARCH)" \
-		GOHOSTOS="$(go env GOHOSTOS)" \
-		GOHOSTARCH="$(go env GOHOSTARCH)" \
-	  && apkArch="$(apk --print-arch)" \
-    && case "$apkArch" in \
-      armhf) export GOARM='6' ;; \
-      x86) export GO386='387' ;; \
-    esac \
-	&& echo "Downloading golang version=${GOLANG_VERSION}" \
+  && apt-get upgrade && apt-get update \
+  && apt-get install -y bash openssl tar gzip wget \
+  && echo "Downloading golang version=${GOLANG_VERSION}" \
   && mkdir -p /build-temp \
   && wget -O /build-temp/golang.tar.gz "https://dl.google.com/go/${GOLANG_VERSION}.linux-amd64.tar.gz" \
   && tar -xf /build-temp/golang.tar.gz -C /usr/local \
-	&& cd /usr/local/go/src \
-	&& ./make.bash \
-	&& rm -rf \
-		/usr/local/go/pkg/bootstrap \
-		/usr/local/go/pkg/obj \
-	&& apk del .build-deps \
-	&& export PATH="/usr/local/go/bin:$PATH" \
-	&& go version && which go
-  
-ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-
-RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
-WORKDIR $GOPATH
+  && export PATH="/usr/local/go/bin:$PATH" \
+  && go version && which go
 
 
 # ===
 # Install golang and build the binaries 
-FROM debian:${DEBIAN_VERSION} as custom-binaries
+FROM ${OS_NAME}:${OS_VERSION} as custom-binaries
 
 COPY --from=golang-base /usr/local/go /usr/local/
 ARG PATH="/usr/local/go/bin:$PATH"
 ENV PATH="/usr/local/go/bin:$PATH"
+
+RUN set -eux \
+  && apt-get upgrade && apt-get update \
+  && apt-get install -y ca-certificates && update-ca-certificates
 
 # Create a working directory
 RUN mkdir -p /build-temp
 COPY  ./ /build-temp
 
 # Build the custom-pion binaries
-RUN cd /build-temp/custom-pion/server && \
-    go build -o /usr/local/bin/pion-server && \
-    cd /build-temp/custom-pion/client && \
-    go build -o /usr/local/bin/pion-client && \
-    chmod +x /usr/local/bin/pion-server && \
-    chmod +x /usr/local/bin/pion-client
+RUN cd /build-temp/custom-pion/server \
+    && go build -o /usr/local/bin/pion-server \
+    && cd /build-temp/custom-pion/client \
+    && go build -o /usr/local/bin/pion-client \
+    && chmod +x /usr/local/bin/pion-server \
+    && chmod +x /usr/local/bin/pion-client
 
 # Make binaries executable
-RUN chmod +x /build-temp/custom-pion/run_pion && \
-    chmod +x /build-temp/custom-pion/health_check
+RUN chmod +x /build-temp/custom-pion/run_pion \
+    && chmod +x /build-temp/custom-pion/health_check
 
 
 # ---
 # Final Image with essentials only
-FROM alpine:${DEBIAN_VERSION}
+FROM ${OS_NAME}:${OS_VERSION}
 
-RUN apt-get update && apt-get install -y bash
+RUN apt-get upgrade && apt-get update \
+	&& apt-get install -y bash
 
 # Copy golang
 COPY --from=golang-base /usr/local/go /usr/local/
