@@ -38,7 +38,7 @@ COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 
 USER 65534
 
-HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
-  CMD /usr/local/bin/health_check
+# HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
+#   CMD /usr/local/bin/health_check
 
 ENTRYPOINT ["/usr/local/bin/run_pion"]
