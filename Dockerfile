@@ -28,7 +28,7 @@ FROM scratch
 # Copy binaries
 COPY --from=builder /go/bin/pion-server /go/bin/pion-server
 COPY --from=builder /go/bin/pion-client /go/bin/pion-client
-
+COPY --from=builder /bin/sh /bin/sh
 
 HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
   CMD /go/bin/pion-client
