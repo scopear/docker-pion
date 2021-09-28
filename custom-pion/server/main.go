@@ -199,10 +199,10 @@ func main() {
 
 	// WARNINGS
 	if *publicIP == "127.0.0.1" {
-		fmt.Printf("[WARNING] TURN_EXTERNAL_IPV4 is set to the default of `127.0.0.1` !!!")
+		fmt.Printf("[WARNING] TURN_EXTERNAL_IPV4 is set to the default of `127.0.0.1` !!!\n")
 	}
 	if *users == "scopear=changeme" {
-		fmt.Printf("[WARNING] Using default TURN user and password !!!")
+		fmt.Printf("[WARNING] Using default TURN user and password !!!\n")
 	}
 
 	// Start turn server service
