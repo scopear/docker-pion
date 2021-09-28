@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -13,20 +14,54 @@ import (
 )
 
 func main() {
-	host := flag.String("host", "127.0.0.1", "TURN Server name.")
-	port := flag.Int("port", 3478, "Listening port.")
-	user := flag.String("user", "scopear=changeme", "A pair of username and password (e.g. \"user=pass\")")
-	realm := flag.String("realm", "ScopeAR", "Realm (defaults to \"ScopeAR\")")
-	ping := flag.Bool("ping", false, "Run ping test")
+
+	// User environment variables
+	turn_external_ip4 := "127.0.0.1"
+	if os.LookupEnv("TURN_EXTERNAL_IPV4") {
+		turn_external_ip4 = os.Getenv("TURN_EXTERNAL_IPV4")
+	}
+	turn_server_port := 3478
+	if os.LookupEnv("TURN_SERVER_PORT") {
+		turn_server_port = os.Getenv("TURN_EXTERNAL_IPV4")
+	}
+	turn_user_name := "scopear"
+	if os.LookupEnv("TURN_USER_NAME") {
+		turn_server_port = os.Getenv("TURN_USER_NAME")
+	}
+	turn_user_password := "changeme"
+	if os.LookupEnv("TURN_USER_PASSWORD") {
+		turn_server_port = os.Getenv("TURN_USER_PASSWORD")
+	}
+	turn_server_realm := "ScopeAR"
+	if os.LookupEnv("TURN_REALM_NAME") {
+		turn_server_port = os.Getenv("TURN_REALM_NAME")
+	}
+	turn_client_ping_enabled := false
+	if os.LookupEnv("TURN_CLIENT_PING_ENABLED") {
+		turn_server_port = os.Getenv("TURN_CLIENT_PING_ENABLED")
+	}
+
+	// Overriding flags
+	host := flag.String("host", turn_external_ip4, "TURN Server name.")
+	port := flag.Int("port", turn_server_port, "Listening port.")
+	user := flag.String("user", turn_user_name+"="+turn_user_password, "A pair of username and password (e.g. \"user=pass\")")
+	realm := flag.String("realm", turn_server_realm, "Realm (defaults to \"ScopeAR\")")
+	ping := flag.Bool("ping", turn_client_ping_enabled, "Run ping test")
 	flag.Parse()
 
-	if *host == "127.0.0.1" {
-		fmt.Printf("[WARNING] host is set to the default of `127.0.0.1`!!!\n")
+	// WARNINGS
+	if host == "127.0.0.1" {
+		fmt.Printf("[WARNING] TURN_EXTERNAL_IPV4 is set to the default of `127.0.0.1` !!!")
 	}
-	if *user == "scopear=changeme" {
-		fmt.Printf("[WARNING] Default user and password are in use!!!\n")
+	if user == "scopear=changeme" {
+		fmt.Printf("[WARNING] Using default TURN user and password !!!")
 	}
 
+	// Start turn client
+	turnClient(&host, &port, &realm, &user, &ping)
+}
+
+func turnClient(host *string, port *int, realm *string, user *string, ping *bool) {
 	cred := strings.SplitN(*user, "=", 2)
 
 	// TURN client won't create a local listening socket by itself.

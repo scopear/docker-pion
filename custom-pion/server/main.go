@@ -54,8 +54,6 @@ func (s *stunLogger) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 
 func turnServer(publicIP *string, port *int, realm *string, users *string, minPort *int, maxPort *int) {
 
-	fmt.Println("TURN_EXTERNAL_IPV4:", os.Getenv("TURN_EXTERNAL_IPV4"))
-
 	// Print configuration info
 	fmt.Printf("=== Start TURN Config ===\n")
 	fmt.Printf("TURN_EXTERNAL_IPV4=" + *publicIP + "\n")
@@ -146,21 +144,58 @@ func turnServer(publicIP *string, port *int, realm *string, users *string, minPo
 }
 
 func main() {
-	publicIP := flag.String("public-ip", "127.0.0.1", "IP Address that TURN can be contacted by.")
-	port := flag.Int("port", 3478, "Listening port.")
-	// TODO: we don't deal with multiple users in our ENV or client healthcheck
-	users := flag.String("users", "scopear=changeme", "List of username and password (e.g. \"user=pass,user=pass\")")
-	realm := flag.String("realm", "ScopeAR", "Realm (defaults to \"ScopeAR\")")
-	minPort := flag.Int("port-range-min", 49152, "lower bounds of the UDP relay endpoints (default is 49152).")
-	maxPort := flag.Int("port-range-max", 65535, "upper bounds of the UDP relay endpoints (default is 65535).")
+
+	// User environment variables
+	turn_external_ip4 := "127.0.0.1"
+	if os.LookupEnv("TURN_EXTERNAL_IPV4") {
+		turn_external_ip4 = os.Getenv("TURN_EXTERNAL_IPV4")
+	}
+	turn_server_port := 3478
+	if os.LookupEnv("TURN_SERVER_PORT") {
+		turn_server_port = os.Getenv("TURN_EXTERNAL_IPV4")
+	}
+	turn_server_realm := "ScopeAR"
+	if os.LookupEnv("TURN_REALM_NAME") {
+		turn_server_port = os.Getenv("TURN_REALM_NAME")
+	}
+	turn_user_name := "scopear"
+	if os.LookupEnv("TURN_USER_NAME") {
+		turn_server_port = os.Getenv("TURN_USER_NAME")
+	}
+	turn_user_password := "changeme"
+	if os.LookupEnv("TURN_USER_PASSWORD") {
+		turn_server_port = os.Getenv("TURN_USER_PASSWORD")
+	}
+	turn_relay_port_range_min := 49152
+	if os.LookupEnv("TURN_RELAY_PORT_RANGE_MIN") {
+		turn_server_port = os.Getenv("TURN_RELAY_PORT_RANGE_MIN")
+	}
+	turn_relay_port_range_max := 65535
+	if os.LookupEnv("TURN_RELAY_PORT_RANGE_MIN") {
+		turn_server_port = os.Getenv("TURN_RELAY_PORT_RANGE_MIN")
+	}
+
+	// Overriding flags
+	publicIP := flag.String("public-ip", turn_external_ip4, "IP Address that TURN can be contacted by.")
+	port := flag.Int("port", turn_server_port, "Listening port.")
+	//TODO: we don't deal with multiple users in our ENV or client healthcheck
+	users := flag.String("users", turn_user_name+"="+turn_user_password, "List of username and password (e.g. \"user=pass,user=pass\")")
+	realm := flag.String("realm", turn_server_realm, "Realm (defaults to \"ScopeAR\")")
+	minPort := flag.Int("port-range-min", turn_relay_port_range_min, "lower bounds of the UDP relay endpoints (default is 49152).")
+	maxPort := flag.Int("port-range-max", turn_relay_port_range_max, "upper bounds of the UDP relay endpoints (default is 65535).")
 	flag.Parse()
 
-	if *publicIP == "127.0.0.1" {
-		fmt.Printf("[WARNING] publicIP is set to the default of `127.0.0.1` !!!")
-	} else if *users == "scopear=changeme" {
-		fmt.Printf("[WARNING] Default user and password are in use !!!")
+	if publicIP == "127.0.0.1" {
+		fmt.Printf("[WARNING] TURN_EXTERNAL_IPV4 is set to the default of `127.0.0.1` !!!")
+	}
+	if users == "scopear=changeme" {
+		fmt.Printf("[WARNING] Using default TURN user and password !!!")
 	}
 
 	// Start turn server service
-	turnServer(publicIP, port, realm, users, minPort, maxPort)
+	turnServer(&publicIP,
+		&port,
+		&realm,
+		&users,
+		&minPort, &maxPort)
 }
