@@ -54,6 +54,8 @@ func (s *stunLogger) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 
 func turnServer(publicIP *string, port *int, realm *string, users *string, minPort *int, maxPort *int) {
 
+	fmt.Println("TURN_EXTERNAL_IPV4:", os.Getenv("TURN_EXTERNAL_IPV4"))
+
 	// Print configuration info
 	fmt.Printf("=== Start TURN Config ===\n")
 	fmt.Printf("TURN_EXTERNAL_IPV4=" + *publicIP + "\n")
