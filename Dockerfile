@@ -5,7 +5,7 @@ ARG OS_VERSION=latest
 # Install golang and build the binaries 
 FROM golang:alpine as builder
 
-RUN apk update && apk upgrade && apk add --no-cache git bash
+RUN apk update && apk upgrade && apk add --no-cache git
 
 WORKDIR $GOPATH/src/mypackage/myapp/
 
@@ -25,16 +25,12 @@ RUN cd /build-temp/custom-pion/server \
 # Final Image with essentials only
 FROM scratch
 
-# Copy Bash
-COPY --from=builder /bin/sh /bin/sh
-COPY --from=builder /bin/bash /bin/bash
-
 # Copy binaries
 COPY --from=builder /go/bin/pion-server /go/bin/pion-server
 COPY --from=builder /go/bin/pion-client /go/bin/pion-client
 
 
 HEALTHCHECK --start-period=30s --interval=1m --timeout=30s \
-  CMD bash -c /go/bin/pion-client
+  CMD /go/bin/pion-client
 
 ENTRYPOINT ["/go/bin/pion-server"]
