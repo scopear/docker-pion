@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,28 +18,36 @@ func main() {
 
 	// User environment variables
 	turn_external_ip4 := "127.0.0.1"
-	if os.LookupEnv("TURN_EXTERNAL_IPV4") {
+	if len(os.Getenv("TURN_EXTERNAL_IPV4")) != 0 {
 		turn_external_ip4 = os.Getenv("TURN_EXTERNAL_IPV4")
 	}
 	turn_server_port := 3478
-	if os.LookupEnv("TURN_SERVER_PORT") {
-		turn_server_port = os.Getenv("TURN_EXTERNAL_IPV4")
+	if len(os.Getenv("TURN_SERVER_PORT")) != 0 {
+		value, err := strconv.Atoi(os.Getenv("TURN_SERVER_PORT"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		turn_server_port = value
 	}
 	turn_user_name := "scopear"
-	if os.LookupEnv("TURN_USER_NAME") {
-		turn_server_port = os.Getenv("TURN_USER_NAME")
+	if len(os.Getenv("TURN_USER_NAME")) != 0 {
+		turn_user_name = os.Getenv("TURN_USER_NAME")
 	}
 	turn_user_password := "changeme"
-	if os.LookupEnv("TURN_USER_PASSWORD") {
-		turn_server_port = os.Getenv("TURN_USER_PASSWORD")
+	if len(os.Getenv("TURN_USER_PASSWORD")) != 0 {
+		turn_user_password = os.Getenv("TURN_USER_PASSWORD")
 	}
 	turn_server_realm := "ScopeAR"
-	if os.LookupEnv("TURN_REALM_NAME") {
-		turn_server_port = os.Getenv("TURN_REALM_NAME")
+	if len(os.Getenv("TURN_REALM_NAME")) != 0 {
+		turn_server_realm = os.Getenv("TURN_REALM_NAME")
 	}
 	turn_client_ping_enabled := false
-	if os.LookupEnv("TURN_CLIENT_PING_ENABLED") {
-		turn_server_port = os.Getenv("TURN_CLIENT_PING_ENABLED")
+	if len(os.Getenv("TURN_CLIENT_PING_ENABLED")) != 0 {
+		value, err := strconv.ParseBool(os.Getenv("TURN_CLIENT_PING_ENABLED"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		turn_client_ping_enabled = value
 	}
 
 	// Overriding flags
@@ -50,15 +59,15 @@ func main() {
 	flag.Parse()
 
 	// WARNINGS
-	if host == "127.0.0.1" {
+	if *host == "127.0.0.1" {
 		fmt.Printf("[WARNING] TURN_EXTERNAL_IPV4 is set to the default of `127.0.0.1` !!!")
 	}
-	if user == "scopear=changeme" {
+	if *user == "scopear=changeme" {
 		fmt.Printf("[WARNING] Using default TURN user and password !!!")
 	}
 
 	// Start turn client
-	turnClient(&host, &port, &realm, &user, &ping)
+	turnClient(host, port, realm, user, ping)
 }
 
 func turnClient(host *string, port *int, realm *string, user *string, ping *bool) {

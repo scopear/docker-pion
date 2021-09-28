@@ -147,32 +147,44 @@ func main() {
 
 	// User environment variables
 	turn_external_ip4 := "127.0.0.1"
-	if os.LookupEnv("TURN_EXTERNAL_IPV4") {
+	if len(os.Getenv("TURN_EXTERNAL_IPV4")) != 0 {
 		turn_external_ip4 = os.Getenv("TURN_EXTERNAL_IPV4")
 	}
 	turn_server_port := 3478
-	if os.LookupEnv("TURN_SERVER_PORT") {
-		turn_server_port = os.Getenv("TURN_EXTERNAL_IPV4")
+	if len(os.Getenv("TURN_SERVER_PORT")) != 0 {
+		value, err := strconv.Atoi(os.Getenv("TURN_SERVER_PORT"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		turn_server_port = value
 	}
 	turn_server_realm := "ScopeAR"
-	if os.LookupEnv("TURN_REALM_NAME") {
-		turn_server_port = os.Getenv("TURN_REALM_NAME")
+	if len(os.Getenv("TURN_REALM_NAME")) != 0 {
+		turn_server_realm = os.Getenv("TURN_REALM_NAME")
 	}
 	turn_user_name := "scopear"
-	if os.LookupEnv("TURN_USER_NAME") {
-		turn_server_port = os.Getenv("TURN_USER_NAME")
+	if len(os.Getenv("TURN_USER_NAME")) != 0 {
+		turn_user_name = os.Getenv("TURN_USER_NAME")
 	}
 	turn_user_password := "changeme"
-	if os.LookupEnv("TURN_USER_PASSWORD") {
-		turn_server_port = os.Getenv("TURN_USER_PASSWORD")
+	if len(os.Getenv("TURN_USER_PASSWORD")) != 0 {
+		turn_user_password = os.Getenv("TURN_USER_PASSWORD")
 	}
 	turn_relay_port_range_min := 49152
-	if os.LookupEnv("TURN_RELAY_PORT_RANGE_MIN") {
-		turn_server_port = os.Getenv("TURN_RELAY_PORT_RANGE_MIN")
+	if len(os.Getenv("TURN_RELAY_PORT_RANGE_MIN")) != 0 {
+		value, err := strconv.Atoi(os.Getenv("TURN_RELAY_PORT_RANGE_MIN"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		turn_relay_port_range_min = value
 	}
 	turn_relay_port_range_max := 65535
-	if os.LookupEnv("TURN_RELAY_PORT_RANGE_MIN") {
-		turn_server_port = os.Getenv("TURN_RELAY_PORT_RANGE_MIN")
+	if len(os.Getenv("TURN_RELAY_PORT_RANGE_MAX")) != 0 {
+		value, err := strconv.Atoi(os.Getenv("TURN_RELAY_PORT_RANGE_MAX"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		turn_relay_port_range_max = value
 	}
 
 	// Overriding flags
@@ -185,17 +197,14 @@ func main() {
 	maxPort := flag.Int("port-range-max", turn_relay_port_range_max, "upper bounds of the UDP relay endpoints (default is 65535).")
 	flag.Parse()
 
-	if publicIP == "127.0.0.1" {
+	// WARNINGS
+	if *publicIP == "127.0.0.1" {
 		fmt.Printf("[WARNING] TURN_EXTERNAL_IPV4 is set to the default of `127.0.0.1` !!!")
 	}
-	if users == "scopear=changeme" {
+	if *users == "scopear=changeme" {
 		fmt.Printf("[WARNING] Using default TURN user and password !!!")
 	}
 
 	// Start turn server service
-	turnServer(&publicIP,
-		&port,
-		&realm,
-		&users,
-		&minPort, &maxPort)
+	turnServer(publicIP, port, realm, users, minPort, maxPort)
 }
