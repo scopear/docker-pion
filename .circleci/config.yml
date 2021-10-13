@@ -20,7 +20,10 @@ jobs:
           name: Push Images
           command: |
             DOCKER_IMAGE="scopear/docker-pion"
-            [[ -z "${CIRCLE_TAG}" ]] && IMAGE_NAME="git-$CIRCLE_SHA1" || IMAGE_NAME="${CIRCLE_TAG}"
+            TIMESTAMP=$(date "+%y%m%d%H%M%S")
+            mkdir -p /tmp/workspace/shared-envs
+            echo "export TIMESTAMP=${TIMESTAMP}" >> /tmp/workspace/shared-envs/build-envs
+            [[ -z "${CIRCLE_TAG}" ]] && IMAGE_NAME="$TIMESTAMP.$CIRCLE_SHA1" || IMAGE_NAME="${CIRCLE_TAG}"
             echo "Pushing $DOCKER_IMAGE:$IMAGE_NAME ..."
             docker tag "$DOCKER_IMAGE" "$DOCKER_IMAGE:$IMAGE_NAME"
             docker push "$DOCKER_IMAGE:$IMAGE_NAME"
@@ -71,20 +74,27 @@ jobs:
       - run:
           name: Docker Login
           command: docker_login
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
           name: Run AquaScan Image
-          command: >-
+          command: |
             DOCKER_IMAGE="scopear/docker-pion";
-            [[ -z "${CIRCLE_TAG}" ]] && IMAGE_NAME="git-$CIRCLE_SHA1" || IMAGE_NAME="${CIRCLE_TAG}";
-            echo "Running Aqua Scanner Image tagged $AQUA_SCANNER_VERSION...";
-            echo "Scanning $DOCKER_IMAGE:$IMAGE_NAME ...";
-            docker run --rm -v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock
-            $AQUA_SCANNER_REPO:$AQUA_SCANNER_VERSION
-            scan --registry "$IMAGE_REGISTRY" "$DOCKER_IMAGE:$IMAGE_NAME"
-            --host $AQUA_HOST --user $AQUA_CONSOLE_USER --password $AQUA_CONSOLE_PASS
-            --show-negligible --register
-            --htmlfile /tmp/out.html --jsonfile /tmp/out.json --html
-            > /tmp/out.html;
+            if [[ -z "${CIRCLE_TAG}" ]] 
+            then 
+              source /tmp/workspace/shared-envs/build-envs
+              IMAGE_NAME="$TIMESTAMP.$CIRCLE_SHA1"
+            else 
+              IMAGE_NAME="${CIRCLE_TAG}"
+            fi
+            echo "Scanning $DOCKER_IMAGE:$IMAGE_NAME ..."
+            docker run --rm -v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock \
+              $AQUA_SCANNER_REPO:$AQUA_SCANNER_VERSION \
+              scan --registry "$IMAGE_REGISTRY" "$DOCKER_IMAGE:$IMAGE_NAME" \
+              --host $AQUA_HOST --user $AQUA_CONSOLE_USER --password $AQUA_CONSOLE_PASS \
+              --show-negligible --register \
+              --htmlfile /tmp/out.html --jsonfile /tmp/out.json --html \
+              > /tmp/out.html;
       - store_artifacts:
           path: /tmp/out.html
           destination: aquascan_pion_results.html
