@@ -141,7 +141,7 @@ workflows:
   weekly:
     triggers:
       - schedule:
-          cron: "0 0 * * 1"
+          cron: "0 9 * * 0"
           filters:
             branches:
               only:
@@ -149,3 +149,7 @@ workflows:
     jobs:
       - build:
           context: scope-circleci
+      - aqua-scan:
+          requires:
+           - build
+          context: scope-aqua-scan
