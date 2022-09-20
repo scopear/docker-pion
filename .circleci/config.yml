@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  snyk: snyk/snyk@1.2.3
 jobs:
   build:
     docker:
@@ -16,6 +18,21 @@ jobs:
       - run:
           name: Build Images
           command: docker build -t "scopear/docker-pion" .
+      - snyk/scan:
+          docker-image-name: scopear/docker-pion
+          severity-threshold: low
+          token-variable: SNYK_TOKEN
+          target-file: Dockerfile
+          monitor-on-build: false
+          fail-on-issues: false
+          additional-arguments: --app-vulns --json-file-output=docker_pion_vuln.json
+      - run:
+          name: Snyk-to-html
+          command: |
+            snyk-to-html -i docker_pion_vuln.json -o docker_pion_snyk_results.html
+      - store_artifacts:
+          path: docker_pion_snyk_results.html
+          destination: docker_pion_snyk_results.html
       - run:
           name: Push Images
           command: |
@@ -61,44 +78,6 @@ jobs:
           name: Upload Image
           command: docker_upload_s3 "scopear/docker-pion" "$CIRCLE_TAG"
 
-  aqua-scan:
-    docker:
-      - image: scopear/docker-base:ci-aws-alpine3.12
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASS
-    working_directory: /tmp
-    steps:
-      - setup_remote_docker:
-          version: 19.03.13
-      - run:
-          name: Docker Login
-          command: docker_login
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Run AquaScan Image
-          command: |
-            DOCKER_IMAGE="scopear/docker-pion";
-            if [[ -z "${CIRCLE_TAG}" ]] 
-            then 
-              source /tmp/workspace/shared-envs/build-envs
-              IMAGE_NAME="$TIMESTAMP.$CIRCLE_SHA1"
-            else 
-              IMAGE_NAME="${CIRCLE_TAG}"
-            fi
-            echo "Scanning $DOCKER_IMAGE:$IMAGE_NAME ..."
-            docker run --rm -v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock \
-              $AQUA_SCANNER_REPO:$AQUA_SCANNER_VERSION \
-              scan --registry "$IMAGE_REGISTRY" "$DOCKER_IMAGE:$IMAGE_NAME" \
-              --host $AQUA_HOST --user $AQUA_CONSOLE_USER --password $AQUA_CONSOLE_PASS \
-              --show-negligible --register \
-              --htmlfile /tmp/out.html --jsonfile /tmp/out.json --html \
-              > /tmp/out.html;
-      - store_artifacts:
-          path: /tmp/out.html
-          destination: aquascan_pion_results.html
-
 workflows:
   version: 2
   deploy:
@@ -125,18 +104,6 @@ workflows:
             tags:
               only:
                 - /^on-prem-\d+\.\d+\.\d+.*$/
-      
-      - aqua-scan:
-          requires:
-           - build
-          context: scope-aqua-scan
-          filters:
-            branches:
-              only:
-                - /.*/
-            tags:
-              only:
-                - /.*/
   
   weekly:
     triggers:
@@ -149,7 +116,3 @@ workflows:
     jobs:
       - build:
           context: scope-circleci
-      - aqua-scan:
-          requires:
-           - build
-          context: scope-aqua-scan
