@@ -4,7 +4,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: scopear/docker-base:ci-alpine3.12
+      - image: scopear/docker-base:ci-snyk-alpine3.12
         auth:
           username: $DOCKER_USER
           password: $DOCKER_PASS
